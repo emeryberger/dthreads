@@ -34,20 +34,20 @@ Dthreads currently only supports Linux/x86 platforms.
       
       Then compile your program as follows:
 
-	% g++ target.o -rdynamic DTHREAD_DIR/libdthread.so -ldl -o target
+	% g++ target.o -rdynamic DTHREAD_DIR/libdthread.so -ldl -o target  
 
   (b) Ordinary dynamic linking: this approach is more flexible (you can
       change the location of the dthreads library), but you must also
       set the `LD_LIBRARY_PATH` environment variable.
 
-	% g++ target.o -LDTHREAD_DIR -ldthread -dl -o target
-	% export LD_LIBRARY_PATH=DTHREAD_DIR:$LD_LIBRARY_PATH
+	% g++ target.o -LDTHREAD_DIR -ldthread -dl -o target  
+	% export LD_LIBRARY_PATH=DTHREAD_DIR:$LD_LIBRARY_PATH  
 
 ### Citing Dthreads ###
 
 If you use dthreads, we would appreciate hearing about it. To cite
 dthreads, please refer to the following paper, included as
-[dthreads-sosp11.pdf](dthreads-sosp11.pdf):
+[dthreads-sosp11.pdf](dthreads/dthreads-sosp11.pdf):
 
 @inproceedings{dthreads,  
  author = {Liu, Tongping and Curtsinger, Charlie and Berger, Emery D. },  
