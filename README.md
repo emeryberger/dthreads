@@ -47,7 +47,7 @@ Dthreads currently only supports Linux/x86 platforms.
 
 If you use dthreads, we would appreciate hearing about it. To cite
 dthreads, please refer to the following paper, included as
-[dthreads-sosp11.pdf](dthreads/dthreads-sosp11.pdf):
+[dthreads-sosp11.pdf](dthreads/doc/dthreads-sosp11.pdf):
 
 @inproceedings{dthreads,  
  author = {Liu, Tongping and Curtsinger, Charlie and Berger, Emery D. },  
