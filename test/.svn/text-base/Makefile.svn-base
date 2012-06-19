@@ -1,0 +1,11 @@
+LIBS=-lm -lrt -ldl
+DETERM_LIBS = $(LIBS) -rdynamic ../../../determ/libgrace.so
+DTHREAD_LIBS = $(LIBS) -rdynamic ../bak1/source/libdthread.so
+PTHREAD_LIBS = $(LIBS) -lpthread
+CFLAGS=-m32 -Wall -g -O1 -T../dthreads.ld
+
+all:
+	g++ $(CFLAGS) -o lock-determ lockowner.c $(DETERM_LIBS) 
+	g++ $(CFLAGS) -o lock-dthread lockowner.c $(DTHREAD_LIBS) 
+	g++ $(CFLAGS) -o lock-pthread lockowner.c $(PTHREAD_LIBS) 
+
