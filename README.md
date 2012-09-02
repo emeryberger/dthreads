@@ -61,3 +61,11 @@ doc/dthreads-sosp11.pdf.
  publisher = {ACM},  
 }   
 
+### Acknowledgment and Disclaimer ###
+
+This material is based upon work supported by the National Science
+Foundation under Grant No. 0910883.
+
+Any opinions, findings and conclusions or recomendations expressed in
+this material are those of the author(s) and do not necessarily
+reflect the views of the National Science Foundation (NSF).
