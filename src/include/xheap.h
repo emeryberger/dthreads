@@ -100,11 +100,14 @@ public:
 #endif
 
 		if (*_remaining == 0) {
-			fprintf(stderr, "FOOP: something very bad has happened: _start = %x, _position = %p, _remaining = %Zx.\n", *_start, *_position, *_remaining);
+			fprintf(stderr, "Something very bad, maybe OUTOFMEMORY or memory corruption,  has happened: _start = %x, _position = %p, _remaining = %Zx.\n", *_start, *_position, *_remaining);
+			fprintf(stderr, "Try to change PROTECTEDHEAP_SIZEin xdefine.h to a bigger value\n");
+			exit(-1);
 		}
 
 		if (*_remaining < sz) {
-			fprintf(stderr, "CRAP: remaining[%Zx], sz[%Zx] thread[%d]\n", *_remaining, sz, (int) pthread_self());
+			fprintf(stderr, "OUTOFMEMORY: remaining[%Zx], sz[%Zx] thread[%d], try to change PROTECTEDHEAP_SIZEin xdefine.h to a bigger value\n", *_remaining, sz, (int) pthread_self());
+			fprintf(stderr, "Try to change PROTECTEDHEAP_SIZEin xdefine.h to a bigger value\n");
 			exit(-1);
 		}
 		void * p = (void *)*_position;

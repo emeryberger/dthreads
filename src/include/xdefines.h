@@ -49,7 +49,7 @@ extern runtime_data_t *global_data;
 class xdefines {
 public:
   enum { STACK_SIZE = 1024 * 1024 } ; // 1 * 1048576 };
-  enum { PROTECTEDHEAP_SIZE = 1048576UL * 800}; // FIX ME 512 };
+  enum { PROTECTEDHEAP_SIZE = 1048576UL * 2048}; // FIX ME 512 };
   enum { PROTECTEDHEAP_CHUNK = 10485760 };
   
   enum { MAX_GLOBALS_SIZE = 1048576UL * 20 };
