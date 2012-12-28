@@ -1,0 +1,3 @@
+Default.mk: DTHREADS_HOME can be changed to specific dthreads home if you didn't download the whole package.
+tests/defines.mk: should be changed to where the datasets located if you are not put them into ./datasets.
+
