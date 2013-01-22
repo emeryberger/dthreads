@@ -172,10 +172,7 @@ netlist::netlist(const std::string& filename)
 	//fprintf(stderr, "before mycreate chip of right size, oldsize %d new size\n", _elements.size(), _chip_size);	
 	//create a chip of the right size
     // LTP: this really sucks? if _chip_size is 562500 here, it will invoke almost 562500*2 times malloc(1);
-	fprintf(stderr, "aaaaaaaaaaaaaaaaaaaaaaaaaa\n");
 	_elements.resize(_chip_size);  
-	fprintf(stderr, "bbbbbbbbbbbbbbbbbbbbbbbbbb\n");
-	fprintf(stderr, "after resize chip of right size, oldsize %d new size\n", _elements.size(), _chip_size);	
 	
 	cout << "locs created" << endl;
 	//create the location elements

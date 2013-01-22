@@ -1,4 +1,5 @@
 include ../defines.mk
+include $(HOME)/Default.mk
 
 TEST_NAME = canneal
 TEST_FILES = annealer_thread rng netlist main netlist_elem
@@ -26,5 +27,4 @@ DMP_O_QUANTUM = 100000
 DMP_B_GRAN = 6
 DMP_B_QUANTUM = 100000
 
-include $(HOME)/Default.mk
 
