@@ -36,7 +36,7 @@
 #include "xplock.h"
 #include "debug.h"
 
-template<int Size>
+template<unsigned long Size>
 class xheap: public xpersist<char, Size> {
 	typedef xpersist<char, Size> parent;
 

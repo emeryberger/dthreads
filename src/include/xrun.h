@@ -596,7 +596,7 @@ getLockAgain:
   static void cond_wait(void * cond, void * lock) {
     // corresponding lock should be acquired before.
     assert(_token_holding == true);
-    assert(determ::getInstance().lock_is_acquired() == true);
+    //assert(determ::getInstance().lock_is_acquired() == true);
     atomicEnd(false);
     // We have to release token in cond_wait, otherwise
     // it can cause deadlock!!! Some other threads

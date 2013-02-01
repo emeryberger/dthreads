@@ -312,6 +312,7 @@ namespace HL {
 
     inline void * malloc (const size_t sz) {
       void * ptr = NULL;
+ //     fprintf(stderr, "SEGHEAP: sz %ld %lx max %lx\n", sz, sz, super::maxObjectSize);
       if (sz <= super::maxObjectSize) {
 	const int sizeClass = ((scFunction) getSizeClass) (sz);
 	const size_t objectSize = ((csFunction) getClassMaxSize) (sizeClass);
