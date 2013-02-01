@@ -570,6 +570,7 @@ int main(int argc, char **argv)
       rem_num = (old_num+rem_num) % 2;
    }
 
+   fprintf(stderr, "Total links %d. \n", use_len[0]);
 
    link_elem_t *curr_elem, *prev_elem = NULL;
    int j;
@@ -586,7 +587,7 @@ int main(int argc, char **argv)
          free(prev_elem);
       }
    }
-   
+
    free(links[0]);
 
    
