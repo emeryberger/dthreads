@@ -568,8 +568,17 @@ getLockAgain:
 
   // Add the barrier support.
   static int barrier_wait(pthread_barrier_t *barrier) {
-    if (!_fence_enabled)
-      return 0;
+    if (!_fence_enabled) {
+      if(_children_threads_count == 0) {
+        return 0;
+      }
+      else {
+        startFence();
+
+        // Waking up all waiting children
+        determ::getInstance().notifyWaitingChildren();
+      }
+    }
 
     //fprintf(stderr, "%d : barier wait\n", getpid());
     waitToken();
