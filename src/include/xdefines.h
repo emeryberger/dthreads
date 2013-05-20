@@ -50,7 +50,11 @@ class xdefines {
 public:
   enum { STACK_SIZE = 1024 * 1024 } ; // 1 * 1048576 };
   //enum { PROTECTEDHEAP_SIZE = 1048576UL * 2048}; // FIX ME 512 };
+#ifdef X86_32BIT
+  enum { PROTECTEDHEAP_SIZE = 1048576UL * 1024}; // FIX ME 512 };
+#else
   enum { PROTECTEDHEAP_SIZE = 1048576UL * 4096}; // FIX ME 512 };
+#endif
   enum { PROTECTEDHEAP_CHUNK = 10485760 };
   
   enum { MAX_GLOBALS_SIZE = 1048576UL * 40 };
