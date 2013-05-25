@@ -14,6 +14,8 @@ Copyright (C) 2011-2012 University of Massachusetts Amherst
 ### Building Dthreads ###
 
 You can build the dthreads library (`libdthread.so`) by running `make`.
+That library is for 64-bit systems (the default); the 32-bit version
+is called `libdthread32.so`.
 
 *NOTE*: if your system does not support the SSE3 instruction set, then
 remove `SSE_SUPPORT` from the Makefile.
@@ -61,3 +63,11 @@ doc/dthreads-sosp11.pdf.
  publisher = {ACM},  
 }   
 
+### Acknowledgment and Disclaimer ###
+
+This material is based upon work supported by the National Science
+Foundation under Grant No. 0910883.
+
+Any opinions, findings and conclusions or recomendations expressed in
+this material are those of the author(s) and do not necessarily
+reflect the views of the National Science Foundation (NSF).

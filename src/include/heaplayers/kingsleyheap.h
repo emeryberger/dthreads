@@ -87,11 +87,12 @@ namespace Kingsley {
       // so we can avoid iterating 5 times.
       //
       int c = 5;
-      size_t sz1 = ((sz - 1) >> 5);
+      size_t sz1 = ((size_t)(sz - 1) >> 5);
       while (sz1 > 7) {
 	sz1 >>= 1;
 	c++;
       }
+    
       assert (class2Size(c) >= sz);
       return c;
     }
@@ -99,8 +100,9 @@ namespace Kingsley {
 
   }
 
+  //inline size_t class2Size (const int i) {
   inline size_t class2Size (const int i) {
-    return (size_t) (1 << (i+3));
+    return (size_t)(1UL << ((size_t)i + 3));
   }
 
   enum { NUMBINS = 29 };

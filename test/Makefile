@@ -1,6 +1,6 @@
 LIBS = -lm -lrt -ldl
 CFLAGS = -m32 -Wall -g -O3 # -T../src/dthreads.ld
-DTHREAD_LIBS = $(LIBS) -rdynamic ../src/libdthread.so
+DTHREAD_LIBS = $(LIBS) -rdynamic ../src/libdthreads32.so
 PTHREAD_LIBS = $(LIBS) -lpthread
 
 all:
@@ -18,4 +18,5 @@ all:
 	gcc $(CFLAGS) bug-race.c      -o bug-race-det $(DTHREAD_LIBS)
 	g++ $(CFLAGS) -o lock-dthread lockowner.c $(DTHREAD_LIBS) 
 	g++ $(CFLAGS) -o lock-pthread lockowner.c $(PTHREAD_LIBS) 
+	g++ $(CFLAGS) -o bug-init bug-init-32bit.c $(DTHREAD_LIBS) 
 

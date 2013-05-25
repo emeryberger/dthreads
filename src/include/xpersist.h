@@ -66,7 +66,7 @@ extern "C" int madvise(caddr_t addr, size_t len, int advice);
  * @class xpersist
  * @brief Makes a range of memory persistent and consistent.
  */
-template<class Type, int NElts = 1>
+template<class Type, unsigned long NElts = 1>
 class xpersist {
 public:
 
@@ -101,7 +101,7 @@ public:
 
     // Set the files to the sizes of the desired object.
     if (ftruncate(_backingFd, NElts * sizeof(Type))) {
-      fprintf(stderr, "Mysterious error with ftruncate.\n");
+      fprintf(stderr, "Mysterious error with ftruncate.NElts %ld\n", NElts);
       ::abort();
     }
 
@@ -120,7 +120,7 @@ public:
     if (ftruncate(_versionsFd, TotalPageNums * sizeof(unsigned long))) {
       // Some sort of mysterious error.
       // Adios.
-      fprintf(stderr, "Mysterious error with ftruncate.\n");
+      fprintf(stderr, "Mysterious error with ftruncate. TotalPagesNums %ld\n", TotalPageNums);
       ::abort();
     }
 
@@ -240,9 +240,9 @@ public:
   }
 #endif
 
-  void *writeProtect(void * start, int size) {
+  void *writeProtect(void * start, size_t size) {
     void * area;
-    ptrdiff_t offset = (intptr_t) start - (intptr_t) base();
+    size_t offset = (intptr_t) start - (intptr_t) base();
 
     // Map to readonly private area.
     area = (Type *) mmap(start, size, PROT_READ, MAP_PRIVATE | MAP_FIXED,
@@ -256,12 +256,12 @@ public:
     return (area);
   }
 
-  void * removeProtect(void * start, int size) {
+  void * removeProtect(void * start, size_t size) {
     void * area;
-    ptrdiff_t offset = (intptr_t) start - (intptr_t) base();
+    size_t offset = (intptr_t) start - (intptr_t) base();
 
     // Map to writable share area.
-    area = (Type *) mmap(start, size, PROT_READ | PROT_WRITE, MAP_SHARED
+    area = mmap(start, size, PROT_READ | PROT_WRITE, MAP_SHARED
         | MAP_FIXED, _backingFd, offset);
 
     if (area == MAP_FAILED) {
@@ -352,7 +352,7 @@ public:
   }
 
   /// @return the size in bytes of the underlying object.
-  inline int size(void) const {
+  inline size_t size(void) const {
     return NElts * sizeof(Type);
   }
   
@@ -383,13 +383,13 @@ public:
   // in the beginning. The difference is that they don't need to commit
   // immediately in order to reduce the time of serial phases.
   // The function will be called when one thread is getting a new superblock.
-  inline void setOwnedPage(void * addr, int size) {
+  inline void setOwnedPage(void * addr, size_t size) {
     if(!_isProtected) 
       return;
 
     int pid = getpid();
-    int startPage = computePage((intptr_t)addr - (intptr_t)base());
-    int pages = size/xdefines::PageSize;
+    size_t startPage = computePage((intptr_t)addr - (intptr_t)base());
+    size_t pages = size/xdefines::PageSize;
     char * pageStart = (char *)addr;
     int blocks = _ownedblocks;
     
@@ -416,7 +416,7 @@ public:
   void handleWrite (void * addr) {
     // Compute the page number of this item
     int pageNo = computePage ((size_t) addr - (size_t) base());
-    int * pageStart = (int *)((intptr_t)_transientMemory + xdefines::PageSize * pageNo);  
+    unsigned long * pageStart = (unsigned long *)((intptr_t)_transientMemory + xdefines::PageSize * pageNo);  
     struct xpageinfo * curr = NULL;
 
 #ifdef LAZY_COMMIT  
@@ -579,8 +579,8 @@ public:
   // This happens when one thread are trying to call pthread_kill or
   // pthread_cancel to kill one thread.
   inline void forceCommitOwnedPages(int pid, void * end) {
-    int startpage = 0;
-    int endpage = ((intptr_t)end - (intptr_t)base())/xdefines::PageSize;
+    size_t startpage = 0;
+    size_t endpage = ((intptr_t)end - (intptr_t)base())/xdefines::PageSize;
     int i;
     
     // Check all possible pages.
@@ -880,12 +880,12 @@ public:
 
 private:
 
-  inline int computePage(int index) {
+  inline size_t computePage(size_t index) {
     return (index * sizeof(Type)) / xdefines::PageSize;
   }
 
   /// @brief Update the given page frame from the backing file.
-  void updatePage (void * local, unsigned int pages, bool release) {
+  void updatePage (void * local, size_t pages, bool release) {
     if(release) {
       madvise (local, xdefines::PageSize * pages, MADV_DONTNEED);     
     }
