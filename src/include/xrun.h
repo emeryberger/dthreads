@@ -568,8 +568,17 @@ getLockAgain:
 
   // Add the barrier support.
   static int barrier_wait(pthread_barrier_t *barrier) {
-    if (!_fence_enabled)
-      return 0;
+    if (!_fence_enabled) {
+      if(_children_threads_count == 0) {
+        return 0;
+      }
+      else {
+        startFence();
+
+        // Waking up all waiting children
+        determ::getInstance().notifyWaitingChildren();
+      }
+    }
 
     //fprintf(stderr, "%d : barier wait\n", getpid());
     waitToken();
@@ -596,7 +605,7 @@ getLockAgain:
   static void cond_wait(void * cond, void * lock) {
     // corresponding lock should be acquired before.
     assert(_token_holding == true);
-    assert(determ::getInstance().lock_is_acquired() == true);
+    //assert(determ::getInstance().lock_is_acquired() == true);
     atomicEnd(false);
     // We have to release token in cond_wait, otherwise
     // it can cause deadlock!!! Some other threads
