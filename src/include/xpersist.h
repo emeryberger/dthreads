@@ -484,6 +484,15 @@ public:
     updateAll(cleanup);
   }
 
+#ifndef SSE_SUPPORT
+  inline void commitWord(char * src, char * twin, char * dest) {
+    for(int i = 0; i < sizeof(long long); i++) {
+      if(src[i] != twin[i]) {
+        dest[i] = src[i];
+      }
+    }
+  }
+#endif
   // Write those difference between local and twin to the destination.
   inline void writePageDiffs(const void * local, const void * twin,
       void * dest, int pageno) {
@@ -512,15 +521,15 @@ public:
     }
 #else
     /* If hardware can't support SSE3 instructions, use slow commits as following. */
-      unsigned long * mylocal = (unsigned long *)local;
-      unsigned long * mytwin = (unsigned long *)twin;
-      unsigned long * mydest = (unsigned long *)dest;
+      long long * mylocal = (long long *)local;
+      long long * mytwin = (long long *)twin;
+      long long * mydest = (long long *)dest;
 
-      for(int i = 0; i < xdefines::PageSize/sizeof(unsigned long); i++) {
+      for(int i = 0; i < xdefines::PageSize/sizeof(long long); i++) {
         if(mylocal[i] != mytwin[i]) {
+          commitWord((char *)&mylocal[i], (char *)&mytwin[i], (char *)&mydest[i]);
           //if(mytwin[i] != mydest[i] && mylocal[i] != mydest[i])
           //fprintf(stderr, "%d: RACE at %p from %x to %x (dest %x). pageno %d\n", getpid(), &mylocal[i], mytwin[i], mylocal[i], mydest[i], pageno);
-          mydest[i] = mylocal[i];
         }
       }
 #endif

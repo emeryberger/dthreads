@@ -148,7 +148,7 @@ public:
 		}
 		for (int i = 0; i < NumHeaps; i++) {
 			_lock[i] = (pthread_mutex_t *) ((intptr_t) base + sizeof(pthread_mutex_t) * i);
-			pthread_mutex_init(_lock[i], &attr);
+			WRAP(pthread_mutex_init)(_lock[i], &attr);
 		}
 	}
 
