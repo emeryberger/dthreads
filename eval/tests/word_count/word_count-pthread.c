@@ -420,12 +420,14 @@ int main(int argc, char *argv[]) {
    printf("Wordcount: Running...\n");
    
    // Read in the file
-   CHECK_ERROR((fd = open(fname, O_RDONLY)) < 0);
+   //CHECK_ERROR((fd = open(fname, O_RDONLY)) < 0);
+   CHECK_ERROR((fd = open(fname, O_RDWR)) < 0);
    // Get the file info (for file length)
    CHECK_ERROR(fstat(fd, &finfo) < 0);
    // Memory map the file
    CHECK_ERROR((fdata = mmap(0, finfo.st_size + 1, 
-        PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)) == NULL);
+        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)) == NULL);
+    //    PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0)) == NULL);
    
    // Get the number of results to display
    CHECK_ERROR((disp_num = (disp_num_str == NULL) ? 
