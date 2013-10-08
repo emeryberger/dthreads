@@ -128,7 +128,10 @@ template<int NumHeaps, class TheHeapType>
 class PPHeap: public TheHeapType {
 public:
 
-	PPHeap(void) {
+	PPHeap(void) {}
+	
+	void initialize(void) {
+
 		/// The lock's attributes.
 		pthread_mutexattr_t attr;
 
