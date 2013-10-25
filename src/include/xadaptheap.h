@@ -52,6 +52,11 @@ public:
 		Source::free(_heap);
 	}
 
+
+	void initialize(void) {
+	  Source::initialize();
+	  _heap->initialize();
+	}
 	void * malloc(int heapid, size_t sz) {
 		return _heap->malloc(heapid, sz);
 	}
