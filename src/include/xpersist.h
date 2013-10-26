@@ -1,6 +1,8 @@
 // -*- C++ -*-
-#ifndef _XPERSIST_H_
-#define _XPERSIST_H_
+
+#ifndef DTHREADS_XPERSIST_H
+#define DTHREADS_XPERSIST_H
+
 /*
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -84,8 +86,8 @@ public:
 
     // Check predefined globals size is large enough or not. 
     if (_startsize > 0) {
-      if (_startsize > NElts * sizeof(Type)) {
-        fprintf(stderr, "This persistent region (%Zd) is too small (%Zd).\n", NElts * sizeof(Type), _startsize);
+      if (_startsize > size()) {
+        fprintf(stderr, "This persistent region (%Zd) is too small (%Zd).\n", size(), _startsize);
         ::abort();
       }
     }
@@ -100,7 +102,7 @@ public:
     }
 
     // Set the files to the sizes of the desired object.
-    if (ftruncate(_backingFd, NElts * sizeof(Type))) {
+    if (ftruncate(_backingFd, size())) {
       fprintf(stderr, "Mysterious error with ftruncate.NElts %ld\n", NElts);
       ::abort();
     }
@@ -120,7 +122,7 @@ public:
     if (ftruncate(_versionsFd, TotalPageNums * sizeof(unsigned long))) {
       // Some sort of mysterious error.
       // Adios.
-      fprintf(stderr, "Mysterious error with ftruncate. TotalPagesNums %ld\n", TotalPageNums);
+      fprintf(stderr, "Mysterious error with ftruncate. TotalPageNums %d\n", TotalPageNums);
       ::abort();
     }
 
@@ -129,7 +131,7 @@ public:
     //
     // Establish two maps to the backing file.
     // The persistent map (shared maping) is shared.
-    _persistentMemory = (Type *) mmap(NULL, NElts * sizeof(Type), PROT_READ
+    _persistentMemory = (Type *) mmap(NULL, size(), PROT_READ
         | PROT_WRITE, MAP_SHARED, _backingFd, 0);
 
     // If we specified a start address (globals), copy the contents into the
@@ -145,13 +147,13 @@ public:
     // The transient map is private and optionally fixed at the desired start address for globals.
     // In order to get the same copy with _persistentMemory for those constructor stuff,
     // we will set to MAP_PRIVATE at first, then memory protection will be opened in initialize().
-    _transientMemory = (Type *) mmap(_startaddr, NElts * sizeof(Type),
+    _transientMemory = (Type *) mmap(_startaddr, size(),
                 PROT_READ | PROT_WRITE, MAP_SHARED | (startaddr != NULL ? MAP_FIXED : 0), 
                 _backingFd, 0);
 
     _isProtected = false;
 
-    DEBUG("xpersist intialize: transient = %p, persistent = %p, size = %Zx", _transientMemory, _persistentMemory, NElts * sizeof(Type));
+    DEBUG("xpersist intialize: transient = %p, persistent = %p, size = %Zx", _transientMemory, _persistentMemory, size());
 
     // We are trying to use page's version number to speedup the commit phase.
     _persistentVersions = (volatile unsigned long *) mmap(NULL,
@@ -195,18 +197,7 @@ public:
 #endif
   }
 
-  /*virtual ~xpersist(void) {
-    close(_backingFd);
-    // Unmap everything.
-    munmap(_transientMemory, NElts * sizeof(Type));
-    munmap(_persistentMemory, NElts * sizeof(Type));
-    close(_versionsFd);
-    munmap((void *) _persistentVersions, TotalPageNums
-        * sizeof(unsigned long));
-    munmap(_pageUsers, TotalPageNums * sizeof(unsigned long));
-  }*/
-
-  void initialize(void) {
+  void initialize() {
     // A string of one bits.
     allones = _mm_setzero_si128();
     allones = _mm_cmpeq_epi32(allones, allones);
@@ -215,7 +206,7 @@ public:
     _dirtiedPagesList.clear();
   }
 
-  void finalize(void) {
+  void finalize() {
     if (_isProtected)
       closeProtection();
 
@@ -226,7 +217,7 @@ public:
   }
 
 #ifdef GET_CHARACTERISTICS
-  int getSingleThreadPages(void) {
+  int getSingleThreadPages() {
     int pages = 0;
     for(int i = 0; i < TotalPageNums; i++) {
       struct pagechangeinfo * page = (struct pagechangeinfo *)&_pageChanges[i];
@@ -250,7 +241,7 @@ public:
     if (area == MAP_FAILED) {
       fprintf(stderr, "Weird, %d writeProtect failed with error %s!!!\n",
               getpid(), strerror(errno));
-      fprintf(stderr, "start %p size %d!!!\n", start, size);
+      fprintf(stderr, "start %p size %ld!!!\n", start, size);
       exit(-1);
     }
     return (area);
@@ -319,7 +310,7 @@ public:
     _trans = 0;
   }
 
-  void closeProtection(void) {
+  void closeProtection() {
     removeProtect(base(), size());
     _isProtected = false;
   }
@@ -339,7 +330,7 @@ public:
   }
 
   /// @return the start of the memory region being managed.
-  inline Type * base(void) const {
+  inline Type * base() const {
     return _transientMemory;
   }
 
@@ -352,7 +343,7 @@ public:
   }
 
   /// @return the size in bytes of the underlying object.
-  inline size_t size(void) const {
+  static inline size_t size() {
     return NElts * sizeof(Type);
   }
   
@@ -474,7 +465,7 @@ public:
   }
   
 
-  bool nop(void) {
+  bool nop() {
     return (_dirtiedPagesList.empty());
   }
 
@@ -641,7 +632,7 @@ public:
     }
   }
 
-  inline void cleanupOwnedBlocks(void) {
+  inline void cleanupOwnedBlocks() {
       _ownedblocks = 0;
   }
   
@@ -883,7 +874,7 @@ public:
   }
 
   /// @brief Commit all writes.
-  inline void memoryBarrier(void) {
+  inline void memoryBarrier() {
     xatomic::memoryBarrier();
   }
 
@@ -968,7 +959,7 @@ private:
   
   
   /// The length of the version array.
-  enum {  TotalPageNums = NElts * sizeof(Type) / (xdefines::PageSize) };
+  enum {  TotalPageNums = sizeof(Type) * NElts / xdefines::PageSize };
 
 #ifdef GET_CHARACTERISTICS
   struct pagechangeinfo {
