@@ -1,218 +1,142 @@
 // -*- C++ -*-
 
-#ifndef _HL_MYHASHMAP_H_
-#define _HL_MYHASHMAP_H_
+#ifndef HL_MYHASHMAP_H
+#define HL_MYHASHMAP_H
+
+/*
+
+  Heap Layers: An Extensible Memory Allocation Infrastructure
+  
+  Copyright (C) 2000-2012 by Emery Berger
+  http://www.cs.umass.edu/~emery
+  emery@cs.umass.edu
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*/
+
 
 #include <assert.h>
-#include <new>
-
-#include "mallocheap.h"
 #include "hash.h"
+#include "mallocheap.h"
 
 namespace HL {
 
-template <typename Key,
-	  typename Value,
-	  class Allocator = mallocHeap>
-class MyHashMap {
+  template <typename Key,
+	    typename Value,
+	    class Allocator = mallocHeap>
+  class MyHashMap {
 
-public:
+  public:
 
-  MyHashMap (int size = INITIAL_NUM_BINS)
-    : num_bins (size)
-  {
-    bins = new (alloc.malloc (sizeof(ListNodePtr) * num_bins)) ListNodePtr;
-    for (int i = 0 ; i < num_bins; i++) {
-      bins[i] = NULL;
-    }
-  }
-
-  void clear (void) {
-    for (int i = 0; i < num_bins; i++) {
-      ListNode * p = bins[i];
-      while (p) {
-	ListNode * n = p;
-	p = p->next;
-	alloc.free ((void *) n);
+    MyHashMap (unsigned int size = INITIAL_NUM_BINS)
+      : _numBins (size)
+    {
+      assert (_numBins > 0);
+      void * buf = _allocator.malloc (sizeof(ListNodePtr) * _numBins); 
+      _bins = new (buf) ListNodePtr[_numBins];
+      for (unsigned int i = 0 ; i < _numBins; i++) {
+	_bins[i] = NULL;
       }
-      bins[i] = NULL;
     }
-  }
 
-  void set (Key k, Value v) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * l = bins[binIndex];
-    while (l != NULL) {
-      if (l->key == k) {
-	l->value = v;
-	return;
-      }
-      l = l->next;
-    }
-    // Didn't find it.
-    insert (k, v);
-  }
-
-  bool get (Key k, Value& v) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * l = bins[binIndex];
-    while (l != NULL) {
-      if (l->key == k) {
-	v = l->value;
-	return true;
-      }
-      l = l->next;
-    }
-    // Didn't find it.
-    return false;
-  }
-
-  bool find_bool (Key k) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * l = bins[binIndex];
-    while (l != NULL) {
-      if (l->key == k) {
-	return true;
-      }
-      l = l->next;
-    }
-    // Didn't find it.
-    return false;
-  }
-
-  void erase (Key k) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * curr = bins[binIndex];
-    ListNode * prev = NULL;
-    while (curr != NULL) {
-      if (curr->key == k) {
-	// Found it.
-	if (curr != bins[binIndex]) {
-	  assert (prev->next == curr);
-	  prev->next = prev->next->next;
-	  alloc.free (curr);
-	} else {
-	  ListNode * n = bins[binIndex]->next;
-	  alloc.free (bins[binIndex]);
-	  bins[binIndex] = n;
+    void set (Key k, Value v) {
+      unsigned int binIndex = (unsigned int) (hash(k) % _numBins);
+      ListNode * l = _bins[binIndex];
+      while (l != NULL) {
+	if (l->key == k) {
+	  l->value = v;
+	  return;
 	}
-	return;
+	l = l->next;
       }
-      prev = curr;
-      curr = curr->next;
+      // Didn't find it.
+      insert (k, v);
     }
-  }
 
-private:
-
-  class ListNode {
-  public:
-    ListNode (void)
-      : next (NULL)
-    {}
-    Key key;
-    Value value;
-    ListNode * next;
-  };
-
-public:
-
-  class iterator {
-  public:
-
-    iterator (void)
-      : _theNode (NULL),
-	_index (0)
-    {}
-    
-    explicit iterator (ListNode * l, int index)
-      : _theNode (l),
-	_index (index)
-    {}
-
-    Value operator*(void) {
-      return _theNode->value;
+    bool get (Key k, Value& v) {
+      unsigned int binIndex = (unsigned int) (hash(k) % _numBins);
+      ListNode * l = _bins[binIndex];
+      while (l != NULL) {
+	if (l->key == k) {
+	  v = l->value;
+	  return true;
+	}
+	l = l->next;
+      }
+      // Didn't find it.
+      return false;
     }
-   
-    bool operator!=(iterator other) const {
-      return (this->_theNode != other._theNode);
-    }
-    
-    bool operator==(iterator other) const {
-      return (this->_theNode == other._theNode);
-    }
-    
-    iterator& operator++ (void) {
-      if (_theNode) {
-	if (_theNode->next) {
-	  _theNode = _theNode->next;
-	} else {
-	  _theNode = NULL;
-	  for (_index++; (_index < num_bins) && (bins[_index] == NULL); _index++)
-	    ;
-	  if (_index < num_bins) {
-	    _theNode = bins[_index];
+
+    void erase (Key k) {
+      unsigned int binIndex = (unsigned int) (hash(k) % _numBins);
+      ListNode * curr = _bins[binIndex];
+      ListNode * prev = NULL;
+      while (curr != NULL) {
+	if (curr->key == k) {
+	  // Found it.
+	  if (curr != _bins[binIndex]) {
+	    assert (prev->next == curr);
+	    prev->next = prev->next->next;
+	    _allocator.free (curr);
+	  } else {
+	    ListNode * n = _bins[binIndex]->next;
+	    _allocator.free (_bins[binIndex]);
+	    _bins[binIndex] = n;
 	  }
+	  return;
 	}
+	prev = curr;
+	curr = curr->next;
       }
-      return *this;
     }
-    
-    iterator& operator=(iterator& it) {
-      this->_theNode = it->_theNode;
-      this->_index = it->_index;
-      return *this;
-    }
+
 
   private:
-    ListNode * _theNode;
-    int _index;
-  };
-  
-  iterator begin (void) {
-    iterator it (bins[0], 0);
-    return it;
-  }
-  
-  iterator end (void) {
-    iterator it (NULL, num_bins - 1);
-    return it;
-  }
 
-  iterator find (Key k) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * l = bins[binIndex];
-    while (l != NULL) {
-      if (l->key == k) {
-	return iterator (l, binIndex);
+    void insert (Key k, Value v) {
+      unsigned int binIndex = (unsigned int) (hash(k) % _numBins);
+      void * ptr = _allocator.malloc (sizeof(ListNode));
+      if (ptr) {
+	ListNode * l = new (ptr) ListNode;
+	l->key = k;
+	l->value = v;
+	l->next = _bins[binIndex];
+	_bins[binIndex] = l;
       }
-      l = l->next;
     }
-    // Didn't find it.
-    return end();
-  }
 
+    enum { INITIAL_NUM_BINS = 511 };
 
-private:
+    class ListNode {
+    public:
+      ListNode (void)
+	: next (NULL)
+      {}
+      Key key;
+      Value value;
+      ListNode * next;
+    };
 
-  void insert (Key k, Value v) {
-    int binIndex = (unsigned int) hash(k) % num_bins;
-    ListNode * l = new (alloc.malloc (sizeof(ListNode))) ListNode;
-    l->key = k;
-    l->value = v;
-    l->next = bins[binIndex];
-    bins[binIndex] = l;
-  }
+    unsigned long 	_numBins;
 
-  enum { INITIAL_NUM_BINS = 511 };
+    typedef ListNode * 	ListNodePtr;
+    ListNodePtr * 	_bins;
+    Allocator 		_allocator;
+  };
 
-  const int num_bins;
-
-  typedef ListNode * ListNodePtr;
-  ListNodePtr * bins;
-  Allocator alloc;
-};
-
-};
+}
 
 #endif
