@@ -81,20 +81,21 @@ public:
   };
 
   /// @arg startaddr  the optional starting address of the local memory.
-  xpersist(void * startaddr = 0, size_t startsize = 0) :
-    _startaddr(startaddr), _startsize(startsize) {
-
+  xpersist(void * startaddr = 0, size_t startsize = 0)
+    : _startaddr(startaddr),
+      _startsize(startsize) 
+  {
     // Check predefined globals size is large enough or not. 
     if (_startsize > 0) {
       if (_startsize > size()) {
-        fprintf(stderr, "This persistent region (%Zd) is too small (%Zd).\n", size(), _startsize);
+        fprintf(stderr, "This persistent region (%ld) is too small (%ld).\n", size(), _startsize);
         ::abort();
       }
     }
 
     // Get a temporary file name (which had better not be NFS-mounted...).
     char _backingFname[L_tmpnam];
-    sprintf(_backingFname, "graceMXXXXXX");
+    sprintf(_backingFname, "dthreadsMXXXXXX");
     _backingFd = mkstemp(_backingFname);
     if (_backingFd == -1) {
       fprintf(stderr, "Failed to make persistent file.\n");
@@ -112,7 +113,7 @@ public:
 
     char _versionsFname[L_tmpnam];
     // Get another temporary file name (which had better not be NFS-mounted...).
-    sprintf(_versionsFname, "graceVXXXXXX");
+    sprintf(_versionsFname, "dthreadsVXXXXXX");
     _versionsFd = mkstemp(_versionsFname);
     if (_versionsFd == -1) {
       fprintf(stderr, "Failed to make persistent file.\n");
@@ -134,6 +135,13 @@ public:
     _persistentMemory = (Type *) mmap(NULL, size(), PROT_READ
         | PROT_WRITE, MAP_SHARED, _backingFd, 0);
 
+    if (_persistentMemory == MAP_FAILED) {
+      fprintf (stderr, "arguments: start= %p, length=%ld\n",
+	       (void *) NULL, size());
+      perror ("Persistent memory creation:");
+      ::abort();
+    }
+
     // If we specified a start address (globals), copy the contents into the
     // persistent area now because the transient memory map is going
     // to squash it.
@@ -148,12 +156,19 @@ public:
     // In order to get the same copy with _persistentMemory for those constructor stuff,
     // we will set to MAP_PRIVATE at first, then memory protection will be opened in initialize().
     _transientMemory = (Type *) mmap(_startaddr, size(),
-                PROT_READ | PROT_WRITE, MAP_SHARED | (startaddr != NULL ? MAP_FIXED : 0), 
+                PROT_READ | PROT_WRITE, MAP_SHARED | (_startaddr != NULL ? MAP_FIXED : 0), 
                 _backingFd, 0);
+
+    if (_transientMemory == MAP_FAILED) {
+      fprintf (stderr, "arguments = %p, %ld, %d, %d, %d\n",
+	       _startaddr, size(), PROT_READ | PROT_WRITE, MAP_SHARED | (_startaddr != NULL ? MAP_FIXED : 0), _backingFd);
+      perror ("Transient memory creation:");
+      ::abort();
+    }
 
     _isProtected = false;
 
-    DEBUG("xpersist intialize: transient = %p, persistent = %p, size = %Zx", _transientMemory, _persistentMemory, size());
+    DEBUG("xpersist intialize: transient = %p, persistent = %p, size = %x", _transientMemory, _persistentMemory, size());
 
     // We are trying to use page's version number to speedup the commit phase.
     _persistentVersions = (volatile unsigned long *) mmap(NULL,
