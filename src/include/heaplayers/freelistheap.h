@@ -1,7 +1,7 @@
 /* -*- C++ -*- */
 
-#ifndef _FREELISTHEAP_H_
-#define _FREELISTHEAP_H_
+#ifndef HL_FREELISTHEAP_H
+#define HL_FREELISTHEAP_H
 
 /**
  * @class FreelistHeap
@@ -45,7 +45,7 @@ public:
 
   inline void clear (void) {
     void * ptr;
-    while (ptr = _freelist.get()) {
+    while ((ptr = _freelist.get())) {
       SuperHeap::free (ptr);
     }
   }
