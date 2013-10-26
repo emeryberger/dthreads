@@ -19,7 +19,7 @@
 
 /*
  * @file   Prof.cpp
- * @brief  Used for profiling purpose.
+ * @brief  Used for profiling.
  * @author Tongping Liu <http://www.cs.umass.edu/~tonyliu>
  * @author Charlie Curtsinger <http://www.cs.umass.edu/~charlie
  */
@@ -46,65 +46,58 @@ extern int allocTimes;
 extern int cleanupSize;
 extern unsigned long *serial_time;
 
-void __get_time(struct timeinfo * ti) {
-	unsigned int tlow, thigh;
-
-	asm volatile ("rdtsc"
-			: "=a"(tlow),
-			"=d"(thigh));
-
-	ti->low = tlow;
-	ti->high = thigh;
+static void get_time(struct timeinfo * ti) {
+  unsigned int tlow, thigh;
+  
+  asm volatile ("rdtsc"
+		: "=a"(tlow),
+		  "=d"(thigh));
+  
+  ti->low = tlow;
+  ti->high = thigh;
 }
 
-double __count_elapse(struct timeinfo * start, struct timeinfo * stop) {
-	double elapsed = 0.0;
-
-	elapsed = (double) (stop->low - start->low) + (double) (UINT_MAX)
-			* (double) (stop->high - start->high);
-	if (stop->low < start->low)
-		elapsed -= (double) UINT_MAX;
-
-	return elapsed;
+static double get_elapsed (struct timeinfo * start, struct timeinfo * stop) {
+  double elapsed = 0.0;
+  
+  elapsed = (double) (stop->low - start->low) + (double) (UINT_MAX)
+    * (double) (stop->high - start->high);
+  if (stop->low < start->low)
+    elapsed -= (double) UINT_MAX;
+  
+  return elapsed;
 }
 
-double get_elapse(struct timeinfo * start, struct timeinfo * stop) {
-	double elapse = 0.0;
-	elapse = __count_elapse(start, stop);
 
-	return elapse;
-}
-
-void start(struct timeinfo *ti) {
-	/* Clear the start_ti and stop_ti */
-	__get_time(ti);
-	return;
+void start (struct timeinfo *ti) {
+  /* Clear the start_ti and stop_ti */
+  get_time(ti);
+  return;
 }
 
 /*
  * Stop timing.
  */
 double stop(struct timeinfo * begin, struct timeinfo * end) {
-	double elapse = 0.0;
-	struct timeinfo stop_ti;
+  double elapsed = 0.0;
+  struct timeinfo stop_ti;
+  
+  if (end == NULL) {
+    get_time(&stop_ti);
+    elapsed = get_elapsed (begin, &stop_ti);
+  } else {
+    get_time(end);
+    elapsed = get_elapsed (begin, end);
+  }
 
-	if (end == NULL) {
-		__get_time(&stop_ti);
-		elapse = get_elapse(begin, &stop_ti);
-	} else {
-		__get_time(end);
-		elapse = get_elapse(begin, end);
-	}
-
-	return elapse;
+  return elapsed;
 }
 
-/* Provide a function to turn the elapse time to microseconds. */
-unsigned long elapse2ms(double elapsed) {
-	unsigned long ms;
-	//ms =(unsigned long)(elapsed*1000000.0/cpu_freq);
-	ms = (unsigned long) (elapsed / cpu_freq);
-	return (ms);
+/* Provide a function to turn the elapsed time to microseconds. */
+unsigned long elapsed2us (double elapsed) {
+  unsigned long us;
+  us = (unsigned long) (elapsed / cpu_freq);
+  return us;
 }
 
 #endif
