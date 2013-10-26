@@ -58,11 +58,6 @@ public:
     _heap->initialize();
   }
 
-
-	void initialize(void) {
-	  Source::initialize();
-	  _heap->initialize();
-	}
 	void * malloc(int heapid, size_t sz) {
 		return _heap->malloc(heapid, sz);
 	}

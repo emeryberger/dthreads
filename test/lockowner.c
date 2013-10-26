@@ -35,7 +35,7 @@ void unit_work(void)
 
 void * child_thread(void * data)
 {
-	int threadid = (int)data;
+	unsigned long threadid = (unsigned long)data;
 	int rounds = 3;	
 	int i;
 	int j;

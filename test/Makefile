@@ -1,6 +1,6 @@
 LIBS = -lm -lrt -ldl
-CFLAGS = -m32 -Wall -g -O3 # -T../src/dthreads.ld
-DTHREAD_LIBS = $(LIBS) -rdynamic ../src/libdthread32.so
+CFLAGS = -Wall -g -O3 # -T../src/dthreads.ld
+DTHREAD_LIBS = $(LIBS) -rdynamic ../src/libdthread.so
 PTHREAD_LIBS = $(LIBS) -lpthread
 
 all:
