@@ -35,8 +35,17 @@ template<template<class S, int Size> class Heap, class Source, int ChunkSize>
 class xadaptheap: public Source {
 public:
 
-	xadaptheap(void) {
-		int metasize = sizeof(Heap<Source, ChunkSize> );
+	xadaptheap(void) { }
+
+
+	virtual ~xadaptheap(void) {
+		Source::free(_heap);
+	}
+
+  void initialize(void) {
+    Source::initialize();
+		
+    int metasize = sizeof(Heap<Source, ChunkSize> );
 		//void * buf = Source::malloc (metasize);
 		void * buf = mmap(NULL, metasize, PROT_READ | PROT_WRITE, MAP_SHARED
 				| MAP_ANONYMOUS, -1, 0);
@@ -46,11 +55,8 @@ public:
 		}
 		_heap = new (buf) Heap<Source, ChunkSize> ;
 		DEBUG("xadaptheap _heap %p size %x", _heap, metasize);
-	}
-
-	virtual ~xadaptheap(void) {
-		Source::free(_heap);
-	}
+    _heap->initialize();
+  }
 
 
 	void initialize(void) {
