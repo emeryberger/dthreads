@@ -61,7 +61,7 @@ public:
 private:
 	bool sanityCheck(void) {
 		if (_magic != MAGIC) {
-			fprintf(stderr, "HLY FK in %d. Current _magic %Zx at %p\n", getpid(), _magic, &_magic);
+			fprintf(stderr, "HLY FK in %d. Current _magic %ld at %p\n", getpid(), _magic, &_magic);
 			::abort();
 		}
 		return true;

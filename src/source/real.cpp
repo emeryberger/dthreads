@@ -22,7 +22,7 @@
 
 /*
  * @file   real.cpp
- * @brief  Used for profiling purpose.
+ * @brief  Used for profiling.
  * @author Charlie Curtsinger <http://www.cs.umass.edu/~charlie>
  */
 
